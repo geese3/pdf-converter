@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🔄 PDF to Image Converter (Web Version)")
+st.title("🔄 PDF 이미지 변환기")
 st.markdown("**설치 없이 바로 사용할 수 있는 PDF 변환기입니다!**")
 
 # 사이드바 설정

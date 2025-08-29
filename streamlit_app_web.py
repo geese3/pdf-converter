@@ -120,63 +120,12 @@ if uploaded_file is not None:
                     # 결과 표시
                     st.subheader("📸 변환된 이미지")
                     
-                    # 이미지들을 슬라이드 형태로 표시 (페이지네이션)
+                    # 이미지들을 가로로 나열 (안정적인 레이아웃)
                     num_images = len(output_files)
                     
-                    # 한 페이지에 표시할 이미지 개수
-                    images_per_page = 4
-                    num_pages = (num_images + images_per_page - 1) // images_per_page
-                    
-                    if num_pages > 1:
-                        # 페이지네이션 컨트롤
-                        col1, col2, col3 = st.columns([1, 2, 1])
-                        
-                        # 현재 페이지 상태 초기화
-                        if 'current_page' not in st.session_state:
-                            st.session_state.current_page = 0
-                        
-                        with col1:
-                            if st.button("⬅️ 이전", key="prev_btn", use_container_width=True):
-                                st.session_state.current_page = max(0, st.session_state.current_page - 1)
-                                st.rerun()
-                        
-                        with col2:
-                            st.markdown(f"**페이지 {st.session_state.current_page + 1} / {num_pages}**")
-                        
-                        with col3:
-                            if st.button("다음 ➡️", key="next_btn", use_container_width=True):
-                                st.session_state.current_page = min(num_pages - 1, st.session_state.current_page + 1)
-                                st.rerun()
-                        
-                        # 현재 페이지의 이미지들 표시
-                        start_idx = st.session_state.current_page * images_per_page
-                        end_idx = min(start_idx + images_per_page, num_images)
-                        page_images = end_idx - start_idx
-                        
-                        cols = st.columns(page_images)
-                        
-                        for i in range(page_images):
-                            img_idx = start_idx + i
-                            file_path = output_files[img_idx]
-                            
-                            with open(file_path, "rb") as img_file:
-                                img_data = img_file.read()
-                            
-                            with cols[i]:
-                                # 이미지 표시
-                                st.image(img_data, caption=f"페이지 {img_idx+1}", width=200)
-                                
-                                # 다운로드 버튼 (이미지와 같은 너비)
-                                filename = Path(file_path).name
-                                st.download_button(
-                                    label=f"📥 다운로드",
-                                    data=img_data,
-                                    file_name=filename,
-                                    mime=f"image/{output_format.lower()}",
-                                    use_container_width=True
-                                )
-                    else:
-                        # 한 페이지에 모든 이미지 표시
+                    # 이미지 개수에 따라 동적으로 컬럼 생성
+                    if num_images <= 4:
+                        # 4개 이하면 한 행에 모두 표시
                         cols = st.columns(num_images)
                         
                         for i, file_path in enumerate(output_files):
@@ -196,6 +145,48 @@ if uploaded_file is not None:
                                     mime=f"image/{output_format.lower()}",
                                     use_container_width=True
                                 )
+                    else:
+                        # 4개 초과시 여러 행으로 나누기
+                        rows = (num_images + 3) // 4  # 올림 나눗셈
+                        
+                        for row in range(rows):
+                            start_idx = row * 4
+                            end_idx = min(start_idx + 4, num_images)
+                            row_images = end_idx - start_idx
+                            
+                            # 현재 행의 컬럼 생성
+                            cols = st.columns(4)
+                            
+                            for i in range(4):
+                                if i < row_images:
+                                    # 실제 이미지 인덱스
+                                    img_idx = start_idx + i
+                                    file_path = output_files[img_idx]
+                                    
+                                    with open(file_path, "rb") as img_file:
+                                        img_data = img_file.read()
+                                    
+                                    with cols[i]:
+                                        # 이미지 표시
+                                        st.image(img_data, caption=f"페이지 {img_idx+1}", width=200)
+                                        
+                                        # 다운로드 버튼 (이미지와 같은 너비)
+                                        filename = Path(file_path).name
+                                        st.download_button(
+                                            label=f"📥 다운로드",
+                                            data=img_data,
+                                            file_name=filename,
+                                            mime=f"image/{output_format.lower()}",
+                                            use_container_width=True
+                                        )
+                                else:
+                                    # 빈 컬럼
+                                    with cols[i]:
+                                        st.empty()
+                            
+                            # 행 간 구분선 (마지막 행 제외)
+                            if row < rows - 1:
+                                st.markdown("---")
                 
                 else:  # 단일 이미지로 결합
                     output_file = converter.convert_pdf_to_single_image(

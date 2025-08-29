@@ -120,50 +120,40 @@ if uploaded_file is not None:
                     # 결과 표시
                     st.subheader("📸 변환된 이미지")
                     
-                    # 가로 스크롤 가능한 컨테이너 생성
-                    st.markdown("""
-                    <style>
-                    .horizontal-scroll {
-                        overflow-x: auto;
-                        white-space: nowrap;
-                        padding: 10px 0;
-                    }
-                    .image-container {
-                        display: inline-block;
-                        margin-right: 20px;
-                        text-align: center;
-                        min-width: 300px;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
+                    # 이미지들을 가로로 나열 (Streamlit columns 사용)
+                    st.subheader("📸 변환된 이미지")
                     
-                    # 이미지들을 가로로 나열
-                    with st.container():
-                        st.markdown('<div class="horizontal-scroll">', unsafe_allow_html=True)
+                    # 이미지 개수에 따라 동적으로 컬럼 생성
+                    num_images = len(output_files)
+                    if num_images <= 3:
+                        cols = st.columns(num_images)
+                    else:
+                        # 3개씩 행으로 나누기
+                        cols = st.columns(3)
+                    
+                    for i, file_path in enumerate(output_files):
+                        with open(file_path, "rb") as img_file:
+                            img_data = img_file.read()
                         
-                        for i, file_path in enumerate(output_files):
-                            with open(file_path, "rb") as img_file:
-                                img_data = img_file.read()
-                            
-                            # 각 이미지를 가로로 배치
-                            st.markdown(f'<div class="image-container">', unsafe_allow_html=True)
-                            
-                            # 이미지 표시 (고정 너비 300px)
-                            st.image(img_data, caption=f"페이지 {i+1}", width=300)
+                        # 컬럼 인덱스 계산 (3개씩 행으로 나누기)
+                        col_idx = i % 3
+                        
+                        with cols[col_idx]:
+                            # 이미지 표시
+                            st.image(img_data, caption=f"페이지 {i+1}", width=250)
                             
                             # 다운로드 버튼
                             filename = Path(file_path).name
                             st.download_button(
-                                label=f"📥 페이지 {i+1} 다운로드",
+                                label=f"📥 다운로드",
                                 data=img_data,
                                 file_name=filename,
                                 mime=f"image/{output_format.lower()}",
                                 use_container_width=True
                             )
                             
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            # 구분선 추가
+                            st.markdown("---")
                 
                 else:  # 단일 이미지로 결합
                     output_file = converter.convert_pdf_to_single_image(

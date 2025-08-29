@@ -255,13 +255,8 @@ st.markdown("""
 - **JPEG/JPG**: 손실 압축, 작은 파일 크기 (투명도 없음)
 - **DPI**: 200-300이 일반적으로 적당합니다
 - **단일 이미지**: 모든 페이지를 세로로 연결한 하나의 이미지
-
-### 🔧 기술 정보
-- **PyMuPDF** 기반 변환 (poppler 불필요)
-- **Streamlit Cloud**에서 호스팅
-- **설치 없이** 웹 브라우저에서 바로 사용
 """)
 
 # 푸터
 st.markdown("---")
-st.markdown("Made with ❤️ using Streamlit and PyMuPDF")
+st.markdown("Made with using Streamlit and PyMuPDF")

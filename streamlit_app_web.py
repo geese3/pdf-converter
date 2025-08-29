@@ -120,49 +120,63 @@ if uploaded_file is not None:
                     # 결과 표시
                     st.subheader("📸 변환된 이미지")
                     
-                    # 이미지들을 탭으로 나누어 표시 (스크롤 효과)
+                    # 이미지들을 슬라이드 형태로 표시 (페이지네이션)
                     num_images = len(output_files)
                     
-                    # 한 탭에 표시할 이미지 개수
-                    images_per_tab = 4
-                    num_tabs = (num_images + images_per_tab - 1) // images_per_tab
+                    # 한 페이지에 표시할 이미지 개수
+                    images_per_page = 4
+                    num_pages = (num_images + images_per_page - 1) // images_per_page
                     
-                    if num_tabs > 1:
-                        # 여러 탭으로 나누기
-                        tab_names = [f"이미지 {i*images_per_tab+1}-{min((i+1)*images_per_tab, num_images)}" for i in range(num_tabs)]
-                        tabs = st.tabs(tab_names)
+                    if num_pages > 1:
+                        # 페이지네이션 컨트롤
+                        col1, col2, col3 = st.columns([1, 2, 1])
                         
-                        for tab_idx, tab in enumerate(tabs):
-                            with tab:
-                                start_idx = tab_idx * images_per_tab
-                                end_idx = min(start_idx + images_per_tab, num_images)
+                        with col1:
+                            if st.button("⬅️ 이전", use_container_width=True):
+                                if 'current_page' not in st.session_state:
+                                    st.session_state.current_page = 0
+                                st.session_state.current_page = max(0, st.session_state.current_page - 1)
+                        
+                        with col2:
+                            if 'current_page' not in st.session_state:
+                                st.session_state.current_page = 0
+                            st.markdown(f"**페이지 {st.session_state.current_page + 1} / {num_pages}**")
+                        
+                        with col3:
+                            if st.button("다음 ➡️", use_container_width=True):
+                                if 'current_page' not in st.session_state:
+                                    st.session_state.current_page = 0
+                                st.session_state.current_page = min(num_pages - 1, st.session_state.current_page + 1)
+                        
+                        # 현재 페이지의 이미지들 표시
+                        start_idx = st.session_state.current_page * images_per_page
+                        end_idx = min(start_idx + images_per_page, num_images)
+                        page_images = end_idx - start_idx
+                        
+                        cols = st.columns(page_images)
+                        
+                        for i in range(page_images):
+                            img_idx = start_idx + i
+                            file_path = output_files[img_idx]
+                            
+                            with open(file_path, "rb") as img_file:
+                                img_data = img_file.read()
+                            
+                            with cols[i]:
+                                # 이미지 표시
+                                st.image(img_data, caption=f"페이지 {img_idx+1}", width=200)
                                 
-                                # 현재 탭의 이미지들을 가로로 나열
-                                tab_images = end_idx - start_idx
-                                cols = st.columns(tab_images)
-                                
-                                for i in range(tab_images):
-                                    img_idx = start_idx + i
-                                    file_path = output_files[img_idx]
-                                    
-                                    with open(file_path, "rb") as img_file:
-                                        img_data = img_file.read()
-                                    
-                                    with cols[i]:
-                                        # 이미지 표시
-                                        st.image(img_data, caption=f"페이지 {img_idx+1}", width=200)
-                                        
-                                        # 다운로드 버튼
-                                        filename = Path(file_path).name
-                                        st.download_button(
-                                            label=f"📥 다운로드",
-                                            data=img_data,
-                                            file_name=filename,
-                                            mime=f"image/{output_format.lower()}",
-                                            use_container_width=True
-                                        )
+                                # 다운로드 버튼 (이미지와 같은 너비)
+                                filename = Path(file_path).name
+                                st.download_button(
+                                    label=f"📥 다운로드",
+                                    data=img_data,
+                                    file_name=filename,
+                                    mime=f"image/{output_format.lower()}",
+                                    use_container_width=True
+                                )
                     else:
-                        # 한 탭에 모든 이미지 표시
+                        # 한 페이지에 모든 이미지 표시
                         cols = st.columns(num_images)
                         
                         for i, file_path in enumerate(output_files):
@@ -173,7 +187,7 @@ if uploaded_file is not None:
                                 # 이미지 표시
                                 st.image(img_data, caption=f"페이지 {i+1}", width=200)
                                 
-                                # 다운로드 버튼
+                                # 다운로드 버튼 (이미지와 같은 너비)
                                 filename = Path(file_path).name
                                 st.download_button(
                                     label=f"📥 다운로드",

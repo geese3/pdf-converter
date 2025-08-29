@@ -120,29 +120,28 @@ if uploaded_file is not None:
                     # 결과 표시
                     st.subheader("📸 변환된 이미지")
                     
-                    # 이미지들을 가로로 나열 (Streamlit columns 사용)
-                    # 이미지 개수에 따라 동적으로 컬럼 생성
+                    # 이미지들을 탭으로 나누어 표시 (스크롤 효과)
                     num_images = len(output_files)
                     
-                    # 한 행에 최대 4개씩 표시
-                    max_cols = 4
-                    if num_images <= max_cols:
-                        cols = st.columns(num_images)
-                    else:
-                        # 여러 행으로 나누기
-                        rows = (num_images + max_cols - 1) // max_cols  # 올림 나눗셈
+                    # 한 탭에 표시할 이미지 개수
+                    images_per_tab = 4
+                    num_tabs = (num_images + images_per_tab - 1) // images_per_tab
+                    
+                    if num_tabs > 1:
+                        # 여러 탭으로 나누기
+                        tab_names = [f"이미지 {i*images_per_tab+1}-{min((i+1)*images_per_tab, num_images)}" for i in range(num_tabs)]
+                        tabs = st.tabs(tab_names)
                         
-                        for row in range(rows):
-                            start_idx = row * max_cols
-                            end_idx = min(start_idx + max_cols, num_images)
-                            row_images = end_idx - start_idx
-                            
-                            # 현재 행의 컬럼 생성
-                            cols = st.columns(max_cols)
-                            
-                            for i in range(max_cols):
-                                if i < row_images:
-                                    # 실제 이미지 인덱스
+                        for tab_idx, tab in enumerate(tabs):
+                            with tab:
+                                start_idx = tab_idx * images_per_tab
+                                end_idx = min(start_idx + images_per_tab, num_images)
+                                
+                                # 현재 탭의 이미지들을 가로로 나열
+                                tab_images = end_idx - start_idx
+                                cols = st.columns(tab_images)
+                                
+                                for i in range(tab_images):
                                     img_idx = start_idx + i
                                     file_path = output_files[img_idx]
                                     
@@ -162,17 +161,10 @@ if uploaded_file is not None:
                                             mime=f"image/{output_format.lower()}",
                                             use_container_width=True
                                         )
-                                else:
-                                    # 빈 컬럼
-                                    with cols[i]:
-                                        st.empty()
-                            
-                            # 행 간 구분선
-                            if row < rows - 1:
-                                st.markdown("---")
-                    
-                    # 이미지가 4개 이하인 경우
-                    if num_images <= max_cols:
+                    else:
+                        # 한 탭에 모든 이미지 표시
+                        cols = st.columns(num_images)
+                        
                         for i, file_path in enumerate(output_files):
                             with open(file_path, "rb") as img_file:
                                 img_data = img_file.read()

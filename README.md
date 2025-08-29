@@ -2,6 +2,15 @@
 
 PDF 파일을 다양한 이미지 형식(PNG, JPEG, TIFF, BMP, GIF)으로 변환하는 Python 프로그램입니다.
 
+## 🌟 **NEW: 설치 없이 사용하는 웹 버전!**
+
+**poppler나 Python 설치 없이** 바로 사용할 수 있는 웹 버전이 추가되었습니다!
+
+- 🌐 **웹에서 바로 사용**: https://pdf-converter-owners.streamlit.app/
+- 📱 **모바일 친화적**: 터치 인터페이스 지원
+- 🚀 **설치 불필요**: 브라우저만 있으면 OK
+- ⚡ **PyMuPDF 기반**: poppler 의존성 제거
+
 ## 🚀 주요 기능
 
 - **다양한 이미지 형식 지원**: PNG, JPEG, TIFF, BMP, GIF
@@ -56,10 +65,19 @@ sudo apt-get install poppler-utils
 
 ## 🎯 사용 방법
 
-### 웹 인터페이스 (Streamlit)
+### 🌐 웹 인터페이스 (Streamlit) - **추천!**
 
-가장 간단한 방법으로 사용할 수 있습니다:
+#### **방법 1: 설치 없이 웹에서 바로 사용 (NEW!)**
+**가장 간단한 방법입니다!**
 
+🌐 **바로 사용하기**: https://pdf-converter-owners.streamlit.app/
+
+- ✅ **설치 불필요**
+- ✅ **poppler 불필요**
+- ✅ **모바일 지원**
+- ✅ **언제 어디서나 접근 가능**
+
+#### **방법 2: 로컬에서 실행**
 ```bash
 streamlit run app.py
 ```

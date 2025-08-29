@@ -54,52 +54,59 @@ with st.sidebar:
         last_page = None
 
 # 메인 영역
-st.subheader("📁 PDF 파일 업로드")
+col1, col2 = st.columns([2, 1])
 
-uploaded_file = st.file_uploader(
-    "PDF 파일을 선택하세요",
-    type=['pdf'],
-    help="최대 200MB까지 업로드 가능합니다"
-)
+with col1:
+    st.subheader("📁 PDF 파일 업로드")
+    
+    uploaded_file = st.file_uploader(
+        "PDF 파일을 선택하세요",
+        type=['pdf'],
+        help="최대 200MB까지 업로드 가능합니다"
+    )
 
-if uploaded_file is not None:
-    # 파일 정보 표시
-    file_details = {
-        "파일명": uploaded_file.name,
-        "파일 크기": f"{uploaded_file.size / 1024 / 1024:.2f} MB",
-        "파일 타입": uploaded_file.type
-    }
-    
-    st.write("**파일 정보:**")
-    for key, value in file_details.items():
-        st.write(f"- {key}: {value}")
-    
-    # 임시 파일로 저장
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        tmp_file_path = tmp_file.name
-    
-    # PDF 정보 가져오기
-    converter = PDFConverterWeb()
-    pdf_info = converter.get_pdf_info(tmp_file_path)
-    
-    st.write(f"**PDF 정보:**")
-    st.write(f"- 총 페이지 수: {pdf_info['page_count']}페이지")
-    if pdf_info['title']:
-        st.write(f"- 제목: {pdf_info['title']}")
-    if pdf_info['author']:
-        st.write(f"- 작성자: {pdf_info['author']}")
-    
-    # 페이지 범위 업데이트
-    if use_page_range and first_page and last_page:
-        if last_page > pdf_info['page_count']:
-            st.warning(f"⚠️ 끝 페이지가 총 페이지 수({pdf_info['page_count']})를 초과합니다. 자동으로 조정됩니다.")
+with col2:
+    if uploaded_file is not None:
+        st.subheader("📋 파일 정보")
+        
+        # 파일 정보 표시
+        file_details = {
+            "파일명": uploaded_file.name,
+            "파일 크기": f"{uploaded_file.size / 1024 / 1024:.2f} MB",
+            "파일 타입": uploaded_file.type
+        }
+        
+        for key, value in file_details.items():
+            st.write(f"**{key}:** {value}")
+        
+        # 임시 파일로 저장
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
+        
+        # PDF 정보 가져오기
+        converter = PDFConverterWeb()
+        pdf_info = converter.get_pdf_info(tmp_file_path)
+        
+        st.write(f"**총 페이지 수:** {pdf_info['page_count']}페이지")
+        if pdf_info['title']:
+            st.write(f"**제목:** {pdf_info['title']}")
+        if pdf_info['author']:
+            st.write(f"**작성자:** {pdf_info['author']}")
+        
+        # 페이지 범위 업데이트
+        if use_page_range and first_page and last_page:
+            if last_page > pdf_info['page_count']:
+                st.warning(f"⚠️ 끝 페이지가 총 페이지 수({pdf_info['page_count']})를 초과합니다. 자동으로 조정됩니다.")
+                last_page = pdf_info['page_count']
+        else:
+            first_page = 1
             last_page = pdf_info['page_count']
     else:
-        first_page = 1
-        last_page = pdf_info['page_count']
-    
-    # 변환 실행 섹션
+        st.info("📁 PDF 파일을 업로드해주세요.")
+
+# 변환 실행 섹션
+if uploaded_file is not None:
     st.subheader("🚀 변환 실행")
     
     if st.button("🔄 변환 시작", type="primary", use_container_width=True):

@@ -65,9 +65,11 @@ with col1:
         help="최대 200MB까지 업로드 가능합니다"
     )
 
+# 세로 구분선 추가
+st.markdown("---")
+
 with col2:
     if uploaded_file is not None:
-        st.markdown("---")  # 구분선 추가
         st.subheader("📋 파일 정보")
         
         # 파일 정보 표시

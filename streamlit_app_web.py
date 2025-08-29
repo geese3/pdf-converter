@@ -120,51 +120,76 @@ if uploaded_file is not None:
                     # 결과 표시
                     st.subheader("📸 변환된 이미지")
                     
-                    # 가로 스크롤을 위한 CSS 스타일
-                    st.markdown("""
-                    <style>
-                    .horizontal-scroll-container {
-                        overflow-x: auto;
-                        white-space: nowrap;
-                        padding: 10px 0;
-                    }
-                    .image-item {
-                        display: inline-block;
-                        margin-right: 20px;
-                        text-align: center;
-                        min-width: 280px;
-                        vertical-align: top;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
+                    # 이미지들을 가로로 나열 (Streamlit columns 사용)
+                    # 이미지 개수에 따라 동적으로 컬럼 생성
+                    num_images = len(output_files)
                     
-                    # 가로 스크롤 컨테이너 시작
-                    st.markdown('<div class="horizontal-scroll-container">', unsafe_allow_html=True)
+                    # 한 행에 최대 4개씩 표시
+                    max_cols = 4
+                    if num_images <= max_cols:
+                        cols = st.columns(num_images)
+                    else:
+                        # 여러 행으로 나누기
+                        rows = (num_images + max_cols - 1) // max_cols  # 올림 나눗셈
+                        
+                        for row in range(rows):
+                            start_idx = row * max_cols
+                            end_idx = min(start_idx + max_cols, num_images)
+                            row_images = end_idx - start_idx
+                            
+                            # 현재 행의 컬럼 생성
+                            cols = st.columns(max_cols)
+                            
+                            for i in range(max_cols):
+                                if i < row_images:
+                                    # 실제 이미지 인덱스
+                                    img_idx = start_idx + i
+                                    file_path = output_files[img_idx]
+                                    
+                                    with open(file_path, "rb") as img_file:
+                                        img_data = img_file.read()
+                                    
+                                    with cols[i]:
+                                        # 이미지 표시
+                                        st.image(img_data, caption=f"페이지 {img_idx+1}", width=200)
+                                        
+                                        # 다운로드 버튼
+                                        filename = Path(file_path).name
+                                        st.download_button(
+                                            label=f"📥 다운로드",
+                                            data=img_data,
+                                            file_name=filename,
+                                            mime=f"image/{output_format.lower()}",
+                                            use_container_width=True
+                                        )
+                                else:
+                                    # 빈 컬럼
+                                    with cols[i]:
+                                        st.empty()
+                            
+                            # 행 간 구분선
+                            if row < rows - 1:
+                                st.markdown("---")
                     
-                    for i, file_path in enumerate(output_files):
-                        with open(file_path, "rb") as img_file:
-                            img_data = img_file.read()
-                        
-                        # 각 이미지 아이템
-                        st.markdown(f'<div class="image-item">', unsafe_allow_html=True)
-                        
-                        # 이미지 표시
-                        st.image(img_data, caption=f"페이지 {i+1}", width=250)
-                        
-                        # 다운로드 버튼
-                        filename = Path(file_path).name
-                        st.download_button(
-                            label=f"📥 다운로드",
-                            data=img_data,
-                            file_name=filename,
-                            mime=f"image/{output_format.lower()}",
-                            use_container_width=True
-                        )
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-                    
-                    # 가로 스크롤 컨테이너 끝
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    # 이미지가 4개 이하인 경우
+                    if num_images <= max_cols:
+                        for i, file_path in enumerate(output_files):
+                            with open(file_path, "rb") as img_file:
+                                img_data = img_file.read()
+                            
+                            with cols[i]:
+                                # 이미지 표시
+                                st.image(img_data, caption=f"페이지 {i+1}", width=200)
+                                
+                                # 다운로드 버튼
+                                filename = Path(file_path).name
+                                st.download_button(
+                                    label=f"📥 다운로드",
+                                    data=img_data,
+                                    file_name=filename,
+                                    mime=f"image/{output_format.lower()}",
+                                    use_container_width=True
+                                )
                 
                 else:  # 단일 이미지로 결합
                     output_file = converter.convert_pdf_to_single_image(

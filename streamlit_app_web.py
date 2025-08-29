@@ -131,22 +131,22 @@ if uploaded_file is not None:
                         # 페이지네이션 컨트롤
                         col1, col2, col3 = st.columns([1, 2, 1])
                         
+                        # 현재 페이지 상태 초기화
+                        if 'current_page' not in st.session_state:
+                            st.session_state.current_page = 0
+                        
                         with col1:
-                            if st.button("⬅️ 이전", use_container_width=True):
-                                if 'current_page' not in st.session_state:
-                                    st.session_state.current_page = 0
+                            if st.button("⬅️ 이전", key="prev_btn", use_container_width=True):
                                 st.session_state.current_page = max(0, st.session_state.current_page - 1)
+                                st.rerun()
                         
                         with col2:
-                            if 'current_page' not in st.session_state:
-                                st.session_state.current_page = 0
                             st.markdown(f"**페이지 {st.session_state.current_page + 1} / {num_pages}**")
                         
                         with col3:
-                            if st.button("다음 ➡️", use_container_width=True):
-                                if 'current_page' not in st.session_state:
-                                    st.session_state.current_page = 0
+                            if st.button("다음 ➡️", key="next_btn", use_container_width=True):
                                 st.session_state.current_page = min(num_pages - 1, st.session_state.current_page + 1)
+                                st.rerun()
                         
                         # 현재 페이지의 이미지들 표시
                         start_idx = st.session_state.current_page * images_per_page

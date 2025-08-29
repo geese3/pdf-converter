@@ -125,18 +125,29 @@ if uploaded_file is not None:
                         with open(file_path, "rb") as img_file:
                             img_data = img_file.read()
                         
-                        # 이미지 표시
-                        st.image(img_data, caption=f"페이지 {i+1}", use_column_width=True)
+                        # 페이지별 컨테이너 생성
+                        with st.container():
+                            st.markdown(f"### 📄 페이지 {i+1}")
+                            
+                            # 이미지와 다운로드 버튼을 나란히 배치
+                            col_img, col_btn = st.columns([3, 1])
+                            
+                            with col_img:
+                                # 이미지 크기 제한 (최대 너비 600px)
+                                st.image(img_data, caption=f"페이지 {i+1}", width=600)
+                            
+                            with col_btn:
+                                # 다운로드 버튼
+                                filename = Path(file_path).name
+                                st.download_button(
+                                    label=f"📥 다운로드",
+                                    data=img_data,
+                                    file_name=filename,
+                                    mime=f"image/{output_format.lower()}",
+                                    use_container_width=True
+                                )
                         
-                        # 다운로드 버튼
-                        filename = Path(file_path).name
-                        st.download_button(
-                            label=f"📥 {filename} 다운로드",
-                            data=img_data,
-                            file_name=filename,
-                            mime=f"image/{output_format.lower()}",
-                            use_container_width=True
-                        )
+                        st.markdown("---")
                 
                 else:  # 단일 이미지로 결합
                     output_file = converter.convert_pdf_to_single_image(
@@ -156,18 +167,23 @@ if uploaded_file is not None:
                         with open(output_file, "rb") as img_file:
                             img_data = img_file.read()
                         
-                        # 이미지 표시
-                        st.image(img_data, caption="결합된 이미지", use_column_width=True)
+                        # 이미지와 다운로드 버튼을 나란히 배치
+                        col_img, col_btn = st.columns([3, 1])
                         
-                        # 다운로드 버튼
-                        filename = Path(output_file).name
-                        st.download_button(
-                            label=f"📥 {filename} 다운로드",
-                            data=img_data,
-                            file_name=filename,
-                            mime=f"image/{output_format.lower()}",
-                            use_container_width=True
-                        )
+                        with col_img:
+                            # 이미지 크기 제한 (최대 너비 600px)
+                            st.image(img_data, caption="결합된 이미지", width=600)
+                        
+                        with col_btn:
+                            # 다운로드 버튼
+                            filename = Path(output_file).name
+                            st.download_button(
+                                label=f"📥 다운로드",
+                                data=img_data,
+                                file_name=filename,
+                                mime=f"image/{output_format.lower()}",
+                                use_container_width=True
+                            )
             
             except Exception as e:
                 st.error(f"❌ 변환 중 오류가 발생했습니다: {str(e)}")
